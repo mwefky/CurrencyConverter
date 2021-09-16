@@ -1,0 +1,38 @@
+PODS:
+  - Alamofire (5.4.3)
+  - iOSDropDown (0.3.4)
+  - RxCocoa (5.1.1):
+    - RxRelay (~> 5)
+    - RxSwift (~> 5)
+  - RxRelay (5.1.1):
+    - RxSwift (~> 5)
+  - RxSwift (5.1.2)
+  - SwiftLint (0.43.1)
+
+DEPENDENCIES:
+  - Alamofire (~> 5)
+  - iOSDropDown
+  - RxCocoa (~> 5)
+  - RxSwift (~> 5)
+  - SwiftLint (~> 0.27)
+
+SPEC REPOS:
+  trunk:
+    - Alamofire
+    - iOSDropDown
+    - RxCocoa
+    - RxRelay
+    - RxSwift
+    - SwiftLint
+
+SPEC CHECKSUMS:
+  Alamofire: e447a2774a40c996748296fa2c55112fdbbc42f9
+  iOSDropDown: c10a761f9a00c3f1cc9d3bce43ae504628e2f692
+  RxCocoa: 32065309a38d29b5b0db858819b5bf9ef038b601
+  RxRelay: d77f7d771495f43c556cbc43eebd1bb54d01e8e9
+  RxSwift: 1e2e1f9570186967f617e49128ed26ccf1bafc8e
+  SwiftLint: 99f82d07b837b942dd563c668de129a03fc3fb52
+
+PODFILE CHECKSUM: 8451be74e155c45b1c7281aad31ca53d9fda8e75
+
+COCOAPODS: 1.10.1
