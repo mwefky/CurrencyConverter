@@ -23,7 +23,7 @@ struct CurrencyConversionViewModel {
     
     var disposeBag = DisposeBag()
     
-    func convertCurrency(with amount: Double, fromCur: String, toCurr: String) {
+    func convertCurrency(with amount: Double, fromCur: CurrencyName, toCurr: CurrencyName) {
         
         validateTransaction(with: amount, fromCur: fromCur, toCurr: toCurr)
     }
@@ -32,21 +32,27 @@ struct CurrencyConversionViewModel {
         currencyConversionvar.onNext(CurrencyDTO(EURBalance: CurrencyValidator.shared.EURBalance, USDBalance: CurrencyValidator.shared.USDBalance, JPYBalance: CurrencyValidator.shared.JPYBalance, message: ""))
     }
     
-    private func validateTransaction(with amount: Double, fromCur: String, toCurr: String) {
+    private func validateTransaction(with amount: Double, fromCur: CurrencyName, toCurr: CurrencyName) {
         if amount == 0.0 {
             postError(error: .noAmount)
         }
         if fromCur == toCurr {
             postError(error: .sameCurrencies)
         }
-        if fromCur == "EUR" && amount > CurrencyValidator.shared.EURBalance {
-            postError(error: .insufficientAmount)
-        }
-        if fromCur == "USD" && amount > CurrencyValidator.shared.USDBalance {
-            postError(error: .insufficientAmount)
-        }
-        if fromCur == "JPY" && amount > CurrencyValidator.shared.JPYBalance {
-            postError(error: .insufficientAmount)
+        switch fromCur {
+        
+        case .EUR:
+            if amount > CurrencyValidator.shared.EURBalance {
+                postError(error: .insufficientAmount)
+            }
+        case .USD:
+            if amount > CurrencyValidator.shared.USDBalance {
+                postError(error: .insufficientAmount)
+            }
+        case .JPY:
+            if amount > CurrencyValidator.shared.JPYBalance {
+                postError(error: .insufficientAmount)
+            }
         }
         performCurrencyConvertRequest(with: amount, fromCur: fromCur, toCurr: toCurr)
     }
@@ -56,8 +62,8 @@ struct CurrencyConversionViewModel {
         currencyConversionvar.disposed(by: disposeBag)
     }
     
-    private func performCurrencyConvertRequest(with amount: Double, fromCur: String, toCurr: String) {
-        ApiClient.convertCurrency(amount: amount, fromCur: fromCur, toCur: toCurr)
+    private func performCurrencyConvertRequest(with amount: Double, fromCur: CurrencyName, toCurr: CurrencyName) {
+        ApiClient.convertCurrency(amount: amount, fromCur: fromCur.rawValue, toCur: toCurr.rawValue)
             .observeOn(MainScheduler.instance)
             .subscribe { (currencyRes) in
                 updateCurrenciesValues(with: amount, toAmount: Double(currencyRes.amount ?? "0.0") ?? 0.0, fromCur: fromCur, toCurr: toCurr)
@@ -67,41 +73,48 @@ struct CurrencyConversionViewModel {
             .disposed(by: disposeBag)
     }
     
-    private func updateCurrenciesValues(with fromAmount: Double, toAmount: Double, fromCur: String, toCurr: String) {
+    private func updateCurrenciesValues(with fromAmount: Double, toAmount: Double, fromCur: CurrencyName, toCurr: CurrencyName) {
         var calculateCommetionFee = false
         if CurrencyValidator.shared.numberOfTransactions > 5 {
             calculateCommetionFee = true
         }
         var commiton = 0.0
-        if fromCur == "EUR" {
+        switch fromCur {
+        
+        case .EUR:
             CurrencyValidator.shared.EURBalance -= fromAmount
             if calculateCommetionFee {
                 CurrencyValidator.shared.EURFees += (fromAmount * 0.7) / 100.0
                 commiton = CurrencyValidator.shared.EURFees
             }
-        } else if fromCur == "USD" {
+        case .USD:
             CurrencyValidator.shared.USDBalance -= fromAmount
             if calculateCommetionFee {
                 CurrencyValidator.shared.USDFees += (fromAmount * 0.7) / 100.0
                 commiton = CurrencyValidator.shared.USDFees
             }
-        } else if fromCur == "JPY"{
+        case .JPY:
             CurrencyValidator.shared.JPYBalance -= fromAmount
             if calculateCommetionFee {
                 CurrencyValidator.shared.JPYFees += (fromAmount * 0.7) / 100.0
                 commiton = CurrencyValidator.shared.JPYFees
             }
+            
         }
         
-        if toCurr == "EUR" {
+        switch toCurr {
+        case .EUR:
             CurrencyValidator.shared.EURBalance += toAmount
-        } else if toCurr == "USD" {
+        case .USD:
             CurrencyValidator.shared.USDBalance += toAmount
-        } else if toCurr == "JPY"{
+        case .JPY:
             CurrencyValidator.shared.JPYBalance += toAmount
         }
         
         CurrencyValidator.shared.numberOfTransactions += 1
-        currencyConversionvar.onNext(CurrencyDTO(EURBalance: CurrencyValidator.shared.EURBalance, USDBalance: CurrencyValidator.shared.USDBalance, JPYBalance: CurrencyValidator.shared.JPYBalance, message: commiton > 0.0 ? "You have converted \(fromAmount) \(fromCur) to \(toAmount) \(toCurr). Commission Fee - \(commiton) \(fromCur)." : ""))
+        currencyConversionvar.onNext(CurrencyDTO(EURBalance: CurrencyValidator.shared.EURBalance,
+                                                 USDBalance: CurrencyValidator.shared.USDBalance,
+                                                 JPYBalance: CurrencyValidator.shared.JPYBalance,
+                                                 message: commiton > 0.0 ? "You have converted \(fromAmount) \(fromCur) to \(toAmount) \(toCurr). Commission Fee - \(commiton) \(fromCur)." : ""))
     }
 }

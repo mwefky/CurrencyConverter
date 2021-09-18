@@ -66,7 +66,7 @@ class CurrencyConversionMainViewController: UIViewController {
     
     @IBAction func submitBtnTapped(_ sender: Any) {
         curFromTextField.resignFirstResponder()
-        currencyViewModel.convertCurrency(with: Double(curFromTextField.text ?? "") ?? 0.0, fromCur: fromCur, toCurr: toCur)
+        currencyViewModel.convertCurrency(with: Double(curFromTextField.text ?? "") ?? 0.0, fromCur: CurrencyName(rawValue: fromCur) ?? .EUR, toCurr: CurrencyName(rawValue: toCur) ?? .USD)
     }
     
     func showAlert(with title: String, message: String) {
