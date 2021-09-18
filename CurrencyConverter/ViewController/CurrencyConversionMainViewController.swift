@@ -28,6 +28,8 @@ class CurrencyConversionMainViewController: UIViewController {
     var toCur = CurrencyName.USD.rawValue
     var amount = 0.0
     
+    var alert: UIAlertController?
+    var loadingIndicator: UIActivityIndicatorView?
     override func viewDidLoad() {
         
         super.viewDidLoad()
@@ -60,17 +62,32 @@ class CurrencyConversionMainViewController: UIViewController {
         
         currencyViewModel.getIntialValues()
         
+        alert = UIAlertController(title: nil, message: "Please wait...", preferredStyle: .alert)
+
+        loadingIndicator = UIActivityIndicatorView(frame: CGRect(x: 10, y: 5, width: 50, height: 50))
+        loadingIndicator?.hidesWhenStopped = true
+        loadingIndicator?.style = UIActivityIndicatorView.Style.medium
+        
         submitBtn.layer.cornerRadius = submitBtn.frame.height / 2
         submitBtn.layer.masksToBounds = true
     }
     
     @IBAction func submitBtnTapped(_ sender: Any) {
         curFromTextField.resignFirstResponder()
+        showLoadingIndecator()
         currencyViewModel.convertCurrency(with: Double(curFromTextField.text ?? "") ?? 0.0, fromCur: CurrencyName(rawValue: fromCur) ?? .EUR, toCurr: CurrencyName(rawValue: toCur) ?? .USD)
     }
     
-    func showAlert(with title: String, message: String) {
+    private func showLoadingIndecator() {
         
+        guard let loadingIndicator = loadingIndicator, let alert = alert else {return}
+        loadingIndicator.startAnimating()
+        alert.view.addSubview(loadingIndicator)
+        present(alert, animated: true, completion: nil)
+    }
+    
+    func showAlert(with title: String, message: String) {
+        dismiss(animated: false, completion: nil)
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         self.present(alert, animated: true, completion: nil)
@@ -97,12 +114,13 @@ class CurrencyConversionMainViewController: UIViewController {
     }
     
     private func updateView(curencies: CurrencyDTO) {
-        
+        dismiss(animated: false, completion: nil)
         eurAmountLabel.text = "\(String(format: "%.2f", curencies.EURBalance)) EUR"
         usdAmountLabel.text = "\(String(format: "%.2f", curencies.USDBalance)) USD"
         JPYAmountLabel.text = "\(String(format: "%.2f", curencies.JPYBalance)) BGN"
         if curencies.message != "" {
             showAlert(with: "Currency converted", message: curencies.message)
         }
+        curFromTextField.text = ""
     }
 }
